@@ -1,0 +1,47 @@
+seqdiag {
+  autonumber = "False";
+  activation = "none"; // really don't like how this tool deals with activation
+  edge_length = "300";
+  default_note_color = lightblue;
+
+  OLT; LEAF; ONOS; "Admission Control"; DHCP; "Image\nManagement"; "Config\nManagement";
+
+  === On Link Up - Admission Control and allow DHCP Traffic ===
+
+  LEAF ->> ONOS [label = "link up"];
+  ONOS ->> "Admission Control" [label = "link up", note = "Admission control could deny\nthis action and then the port\nwould remain closed, dropping\nall packets"];
+  ONOS <<- "Admission Control" [label = "match PORT 67/68 (DHCP) ==>\nFORWARD DHCP server,\nelse DROP"];
+  LEAF <<- ONOS [label = "match PORT 67/68 (DHCP) ==>\nFORWARD DHCP server,\nelse DROP"];  
+
+  === Move OLT into Quarantine ===
+  OLT ->> LEAF [label = "DHCP DISCOVER"];
+  LEAF ->> DHCP [label = "DHCP DISCOVER (relay)"];
+  LEAF <<- DHCP [label = "DHCP OFFER (quarantine,\nshort lease)"];
+  OLT <<- LEAF [label = "DHCP OFFER (quarantine,\nshort lease)"];
+
+  === Verify and update image on OLT ===
+  DHCP ->> "Image\nManagement" [label = "NOTIFY: OLT coming on line with IP x.x.x.x", note = "message send when OLT ACK\nis received by DHCP"];
+  "Image\nManagement" -> OLT [label = "Discover image information"];
+  "Image\nManagement" <-- OLT [label = "image information"];
+  "Image\nManagement" -> OLT [label = "Download new image and reboot"];
+  OLT -> "Image\nManagement" [label = "Fetch image"];
+  OLT <-- "Image\nManagement" [label = "image"];
+  OLT -> OLT [label = "Reboot", note = "The solution needs to\nrecognize the reboot and\nput the OTL back into\nquarantine"];
+
+  === Manual / Policy to move a connection to "active" ===
+  "Image\nManagement" ->> POLICY [label = "NOTIFY: OLT available with valid image", note = "Sent after Image Management\nis notified by DHCP that\nOLT is up and Image\nManagement as verified a valid image"];
+  POLICY -> DHCP [label = "move OLT to ACCEPT scope", note = "Can be triggered either via\nautomated policy or manual action."];
+
+  === DHCP renew - Move OLT to "active" network ===
+  OLT ->> LEAF [label = "DHCP RENEW"];
+  LEAF ->> DHCP [label = "DHCP RENEW (relay)"];
+  DHCP ->> LEAF [label = "DHCP NAK"]; 
+  LEAF ->> OLT [label = "DHCP NAK"]; 
+  OLT ->> LEAF [label = "DHCP DISCOVER"];
+  LEAF ->> DHCP [label = "DHCP DISCOVER (relay)"];
+  DHCP ->> LEAF [label = "DHCP OFFER (active,\nlong lease)\nwith config file info"];
+  LEAF ->> OLT [label = "DHCP OFFER (active,\nlong lease)\nwith config file info"];
+  OLT -> "Config\nManagement" [label = "download specified configuration", note = "OFConfig file"];
+  OLT <- "Config\nManagement" [label = "config file"];
+  OLT -> OLT [label = "update config", leftnote = "This could involve a reboot, meaning\nthe solution needs to get the\nOLT back to this state with\nthe correct config"];
+}
