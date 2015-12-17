@@ -1,0 +1,287 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
+<svg viewBox="0 0 2652 2869" xmlns="http://www.w3.org/2000/svg" xmlns:inkspace="http://www.inkscape.org/namespaces/inkscape" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <defs id="defs_block">
+    <filter height="1.504" id="filter_blur" inkspace:collect="always" width="1.1575" x="-0.07875" y="-0.252">
+      <feGaussianBlur id="feGaussianBlur3780" inkspace:collect="always" stdDeviation="4.2" />
+    </filter>
+  </defs>
+  <title>blockdiag</title>
+  <desc>seqdiag {
+  autonumber = "False";
+  activation = "none"; // really don't like how this tool deals with activation
+  edge_length = "300";
+  default_note_color = lightblue;
+
+  OLT; LEAF; ONOS; "Admission Control"; DHCP; "Image\nManagement"; "Config\nManagement";
+
+  === On Link Up - Admission Control and allow DHCP Traffic ===
+
+  LEAF -&gt;&gt; ONOS [label = "link up"];
+  ONOS -&gt;&gt; "Admission Control" [label = "link up", note = "Admission control could deny\nthis action and then the port\nwould remain closed, dropping\nall packets"];
+  ONOS &lt;&lt;- "Admission Control" [label = "match PORT 67/68 (DHCP) ==&gt;\nFORWARD DHCP server,\nelse DROP"];
+  LEAF &lt;&lt;- ONOS [label = "match PORT 67/68 (DHCP) ==&gt;\nFORWARD DHCP server,\nelse DROP"];  
+
+  === Move OLT into Quarantine ===
+  OLT -&gt;&gt; LEAF [label = "DHCP DISCOVER"];
+  LEAF -&gt;&gt; DHCP [label = "DHCP DISCOVER (relay)"];
+  LEAF &lt;&lt;- DHCP [label = "DHCP OFFER (quarantine,\nshort lease)"];
+  OLT &lt;&lt;- LEAF [label = "DHCP OFFER (quarantine,\nshort lease)"];
+
+  === Verify and update image on OLT ===
+  DHCP -&gt;&gt; "Image\nManagement" [label = "NOTIFY: OLT coming on line with IP x.x.x.x", note = "message send when OLT ACK\nis received by DHCP"];
+  "Image\nManagement" -&gt; OLT [label = "Discover image information"];
+  "Image\nManagement" &lt;-- OLT [label = "image information"];
+  "Image\nManagement" -&gt; OLT [label = "Download new image and reboot"];
+  OLT -&gt; "Image\nManagement" [label = "Fetch image"];
+  OLT &lt;-- "Image\nManagement" [label = "image"];
+  OLT -&gt; OLT [label = "Reboot", note = "The solution needs to\nrecognize the reboot and\nput the OTL back into\nquarantine"];
+
+  === Manual / Policy to move a connection to "active" ===
+  "Image\nManagement" -&gt;&gt; POLICY [label = "NOTIFY: OLT available with valid image", note = "Sent after Image Management\nis notified by DHCP that\nOLT is up and Image\nManagement as verified a valid image"];
+  POLICY -&gt; DHCP [label = "move OLT to ACCEPT scope", note = "Can be triggered either via\nautomated policy or manual action."];
+
+  === DHCP renew - Move OLT to "active" network ===
+  OLT -&gt;&gt; LEAF [label = "DHCP RENEW"];
+  LEAF -&gt;&gt; DHCP [label = "DHCP RENEW (relay)"];
+  DHCP -&gt;&gt; LEAF [label = "DHCP NAK"]; 
+  LEAF -&gt;&gt; OLT [label = "DHCP NAK"]; 
+  OLT -&gt;&gt; LEAF [label = "DHCP DISCOVER"];
+  LEAF -&gt;&gt; DHCP [label = "DHCP DISCOVER (relay)"];
+  DHCP -&gt;&gt; LEAF [label = "DHCP OFFER (active,\nlong lease)\nwith config file info"];
+  LEAF -&gt;&gt; OLT [label = "DHCP OFFER (active,\nlong lease)\nwith config file info"];
+  OLT -&gt; "Config\nManagement" [label = "download specified configuration", note = "OFConfig file"];
+  OLT &lt;- "Config\nManagement" [label = "config file"];
+  OLT -&gt; OLT [label = "update config", leftnote = "This could involve a reboot, meaning\nthe solution needs to get the\nOLT back to this state with\nthe correct config"];
+}
+</desc>
+  <polygon fill="rgb(0,0,0)" points="1199,271 1389,271 1397,279 1397,325 1199,325 1199,271" stroke="rgb(0,0,0)" style="filter:url(#filter_blur);opacity:0.7;fill-opacity:1" />
+  <polygon fill="rgb(0,0,0)" points="1799,1028 1965,1028 1973,1036 1973,1056 1799,1056 1799,1028" stroke="rgb(0,0,0)" style="filter:url(#filter_blur);opacity:0.7;fill-opacity:1" />
+  <polygon fill="rgb(0,0,0)" points="471,1507 631,1507 639,1515 639,1561 471,1561 471,1507" stroke="rgb(0,0,0)" style="filter:url(#filter_blur);opacity:0.7;fill-opacity:1" />
+  <polygon fill="rgb(0,0,0)" points="2399,1681 2631,1681 2639,1689 2639,1735 2399,1735 2399,1681" stroke="rgb(0,0,0)" style="filter:url(#filter_blur);opacity:0.7;fill-opacity:1" />
+  <polygon fill="rgb(0,0,0)" points="2399,1776 2619,1776 2627,1784 2627,1804 2399,1804 2399,1776" stroke="rgb(0,0,0)" style="filter:url(#filter_blur);opacity:0.7;fill-opacity:1" />
+  <polygon fill="rgb(0,0,0)" points="2099,2605 2193,2605 2201,2613 2201,2620 2099,2620 2099,2605" stroke="rgb(0,0,0)" style="filter:url(#filter_blur);opacity:0.7;fill-opacity:1" />
+  <polygon fill="rgb(0,0,0)" points="27,2757 259,2757 267,2765 267,2811 27,2811 27,2757" stroke="rgb(0,0,0)" style="filter:url(#filter_blur);opacity:0.7;fill-opacity:1" />
+  <rect fill="rgb(0,0,0)" height="40" stroke="rgb(0,0,0)" style="filter:url(#filter_blur);opacity:0.7;fill-opacity:1" width="128" x="219" y="46" />
+  <rect fill="rgb(0,0,0)" height="40" stroke="rgb(0,0,0)" style="filter:url(#filter_blur);opacity:0.7;fill-opacity:1" width="128" x="519" y="46" />
+  <rect fill="rgb(0,0,0)" height="40" stroke="rgb(0,0,0)" style="filter:url(#filter_blur);opacity:0.7;fill-opacity:1" width="128" x="819" y="46" />
+  <rect fill="rgb(0,0,0)" height="40" stroke="rgb(0,0,0)" style="filter:url(#filter_blur);opacity:0.7;fill-opacity:1" width="128" x="1119" y="46" />
+  <rect fill="rgb(0,0,0)" height="40" stroke="rgb(0,0,0)" style="filter:url(#filter_blur);opacity:0.7;fill-opacity:1" width="128" x="1419" y="46" />
+  <rect fill="rgb(0,0,0)" height="40" stroke="rgb(0,0,0)" style="filter:url(#filter_blur);opacity:0.7;fill-opacity:1" width="128" x="1719" y="46" />
+  <rect fill="rgb(0,0,0)" height="40" stroke="rgb(0,0,0)" style="filter:url(#filter_blur);opacity:0.7;fill-opacity:1" width="128" x="2019" y="46" />
+  <rect fill="rgb(0,0,0)" height="40" stroke="rgb(0,0,0)" style="filter:url(#filter_blur);opacity:0.7;fill-opacity:1" width="128" x="2319" y="46" />
+  <path d="M 280 80 L 280 2857" fill="none" stroke="rgb(0,0,0)" stroke-dasharray="8 4" />
+  <path d="M 580 80 L 580 2857" fill="none" stroke="rgb(0,0,0)" stroke-dasharray="8 4" />
+  <path d="M 880 80 L 880 2857" fill="none" stroke="rgb(0,0,0)" stroke-dasharray="8 4" />
+  <path d="M 1180 80 L 1180 2857" fill="none" stroke="rgb(0,0,0)" stroke-dasharray="8 4" />
+  <path d="M 1480 80 L 1480 2857" fill="none" stroke="rgb(0,0,0)" stroke-dasharray="8 4" />
+  <path d="M 1780 80 L 1780 2857" fill="none" stroke="rgb(0,0,0)" stroke-dasharray="8 4" />
+  <path d="M 2080 80 L 2080 2857" fill="none" stroke="rgb(0,0,0)" stroke-dasharray="8 4" />
+  <path d="M 2380 80 L 2380 2857" fill="none" stroke="rgb(0,0,0)" stroke-dasharray="8 4" />
+  <rect fill="rgb(255,255,255)" height="40" stroke="rgb(0,0,0)" width="128" x="216" y="40" />
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="18" x="280" y="66">OLT</text>
+  <rect fill="rgb(255,255,255)" height="40" stroke="rgb(0,0,0)" width="128" x="516" y="40" />
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="24" x="580" y="66">LEAF</text>
+  <rect fill="rgb(255,255,255)" height="40" stroke="rgb(0,0,0)" width="128" x="816" y="40" />
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="24" x="880" y="66">ONOS</text>
+  <rect fill="rgb(255,255,255)" height="40" stroke="rgb(0,0,0)" width="128" x="1116" y="40" />
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="102" x="1180" y="66">Admission Control</text>
+  <rect fill="rgb(255,255,255)" height="40" stroke="rgb(0,0,0)" width="128" x="1416" y="40" />
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="24" x="1480" y="66">DHCP</text>
+  <rect fill="rgb(255,255,255)" height="40" stroke="rgb(0,0,0)" width="128" x="1716" y="40" />
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="30" x="1780" y="59">Image</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="60" x="1780" y="72">Management</text>
+  <rect fill="rgb(255,255,255)" height="40" stroke="rgb(0,0,0)" width="128" x="2016" y="40" />
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="36" x="2080" y="59">Config</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="60" x="2080" y="72">Management</text>
+  <rect fill="rgb(255,255,255)" height="40" stroke="rgb(0,0,0)" width="128" x="2316" y="40" />
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="36" x="2380" y="66">POLICY</text>
+  <path d="M 588 215 L 872 215" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 864 211 L 872 215" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 872 215 L 864 219" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 888 292 L 1172 292" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1164 288 L 1172 292" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1172 292 L 1164 296" fill="none" stroke="rgb(0,0,0)" />
+  <polygon fill="rgb(173,216,230)" points="1196,265 1386,265 1394,273 1394,319 1196,319 1196,265" stroke="rgb(0,0,0)" />
+  <path d="M 1386 265 L 1386 273" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1386 273 L 1394 273" fill="none" stroke="rgb(0,0,0)" />
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="168" x="1288" y="278">Admission control could deny</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="174" x="1291" y="291">this action and then the port</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="174" x="1291" y="304">would remain closed, dropping</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="66" x="1237" y="317">all packets</text>
+  <path d="M 888 400 L 1172 400" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 896 396 L 888 400" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 888 400 L 896 404" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 588 491 L 872 491" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 596 487 L 588 491" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 588 491 L 596 495" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 288 636 L 572 636" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 564 632 L 572 636" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 572 636 L 564 640" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 588 716 L 1472 716" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1464 712 L 1472 716" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1472 716 L 1464 720" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 588 809 L 1472 809" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 596 805 L 588 809" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 588 809 L 596 813" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 288 889 L 572 889" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 296 885 L 288 889" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 288 889 L 296 893" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1488 1036 L 1772 1036" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1764 1032 L 1772 1036" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1772 1036 L 1764 1040" fill="none" stroke="rgb(0,0,0)" />
+  <polygon fill="rgb(173,216,230)" points="1796,1022 1962,1022 1970,1030 1970,1050 1796,1050 1796,1022" stroke="rgb(0,0,0)" />
+  <path d="M 1962 1022 L 1962 1030" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1962 1030 L 1970 1030" fill="none" stroke="rgb(0,0,0)" />
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="150" x="1879" y="1035">message send when OLT ACK</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="114" x="1861" y="1048">is received by DHCP</text>
+  <path d="M 288 1116 L 1772 1116" fill="none" stroke="rgb(0,0,0)" />
+  <polygon fill="rgb(0,0,0)" points="296,1112 288,1116 296,1120" stroke="rgb(0,0,0)" />
+  <path d="M 288 1196 L 1772 1196" fill="none" stroke="rgb(0,0,0)" stroke-dasharray="4" />
+  <polygon fill="rgb(0,0,0)" points="1764,1192 1772,1196 1764,1200" stroke="rgb(0,0,0)" />
+  <path d="M 288 1276 L 1772 1276" fill="none" stroke="rgb(0,0,0)" />
+  <polygon fill="rgb(0,0,0)" points="296,1272 288,1276 296,1280" stroke="rgb(0,0,0)" />
+  <path d="M 288 1356 L 1772 1356" fill="none" stroke="rgb(0,0,0)" />
+  <polygon fill="rgb(0,0,0)" points="1764,1352 1772,1356 1764,1360" stroke="rgb(0,0,0)" />
+  <path d="M 288 1436 L 1772 1436" fill="none" stroke="rgb(0,0,0)" stroke-dasharray="4" />
+  <polygon fill="rgb(0,0,0)" points="296,1432 288,1436 296,1440" stroke="rgb(0,0,0)" />
+  <path d="M 288 1528 L 452 1528" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 452 1528 L 452 1544" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 452 1544 L 288 1544" fill="none" stroke="rgb(0,0,0)" />
+  <polygon fill="rgb(0,0,0)" points="296,1540 288,1544 296,1548" stroke="rgb(0,0,0)" />
+  <polygon fill="rgb(173,216,230)" points="468,1501 628,1501 636,1509 636,1555 468,1555 468,1501" stroke="rgb(0,0,0)" />
+  <path d="M 628 1501 L 628 1509" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 628 1509 L 636 1509" fill="none" stroke="rgb(0,0,0)" />
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="126" x="539" y="1514">The solution needs to</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="144" x="548" y="1527">recognize the reboot and</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="126" x="539" y="1540">put the OTL back into</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="60" x="506" y="1553">quarantine</text>
+  <path d="M 1788 1702 L 2372 1702" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 2364 1698 L 2372 1702" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 2372 1702 L 2364 1706" fill="none" stroke="rgb(0,0,0)" />
+  <polygon fill="rgb(173,216,230)" points="2396,1675 2628,1675 2636,1683 2636,1729 2396,1729 2396,1675" stroke="rgb(0,0,0)" />
+  <path d="M 2628 1675 L 2628 1683" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 2628 1683 L 2636 1683" fill="none" stroke="rgb(0,0,0)" />
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="162" x="2485" y="1688">Sent after Image Management</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="144" x="2476" y="1701">is notified by DHCP that</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="114" x="2461" y="1714">OLT is up and Image</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="216" x="2512" y="1727">Management as verified a valid image</text>
+  <path d="M 1488 1784 L 2372 1784" fill="none" stroke="rgb(0,0,0)" />
+  <polygon fill="rgb(0,0,0)" points="1496,1780 1488,1784 1496,1788" stroke="rgb(0,0,0)" />
+  <polygon fill="rgb(173,216,230)" points="2396,1770 2616,1770 2624,1778 2624,1798 2396,1798 2396,1770" stroke="rgb(0,0,0)" />
+  <path d="M 2616 1770 L 2616 1778" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 2616 1778 L 2624 1778" fill="none" stroke="rgb(0,0,0)" />
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="162" x="2485" y="1783">Can be triggered either via</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="204" x="2506" y="1796">automated policy or manual action.</text>
+  <path d="M 288 1944 L 572 1944" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 564 1940 L 572 1944" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 572 1944 L 564 1948" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 588 2024 L 1472 2024" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1464 2020 L 1472 2024" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1472 2024 L 1464 2028" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 588 2104 L 1472 2104" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 596 2100 L 588 2104" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 588 2104 L 596 2108" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 288 2184 L 572 2184" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 296 2180 L 288 2184" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 288 2184 L 296 2188" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 288 2264 L 572 2264" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 564 2260 L 572 2264" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 572 2264 L 564 2268" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 588 2344 L 1472 2344" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1464 2340 L 1472 2344" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1472 2344 L 1464 2348" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 588 2450 L 1472 2450" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 596 2446 L 588 2450" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 588 2450 L 596 2454" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 288 2541 L 572 2541" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 296 2537 L 288 2541" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 288 2541 L 296 2545" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 288 2606 L 2072 2606" fill="none" stroke="rgb(0,0,0)" />
+  <polygon fill="rgb(0,0,0)" points="2064,2602 2072,2606 2064,2610" stroke="rgb(0,0,0)" />
+  <polygon fill="rgb(173,216,230)" points="2096,2599 2190,2599 2198,2607 2198,2614 2096,2614 2096,2599" stroke="rgb(0,0,0)" />
+  <path d="M 2190 2599 L 2190 2607" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 2190 2607 L 2198 2607" fill="none" stroke="rgb(0,0,0)" />
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="78" x="2143" y="2612">OFConfig file</text>
+  <path d="M 288 2686 L 2072 2686" fill="none" stroke="rgb(0,0,0)" />
+  <polygon fill="rgb(0,0,0)" points="296,2682 288,2686 296,2690" stroke="rgb(0,0,0)" />
+  <path d="M 288 2778 L 452 2778" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 452 2778 L 452 2794" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 452 2794 L 288 2794" fill="none" stroke="rgb(0,0,0)" />
+  <polygon fill="rgb(0,0,0)" points="296,2790 288,2794 296,2798" stroke="rgb(0,0,0)" />
+  <polygon fill="rgb(173,216,230)" points="24,2751 256,2751 264,2759 264,2805 24,2805 24,2751" stroke="rgb(0,0,0)" />
+  <path d="M 256 2751 L 256 2759" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 256 2759 L 264 2759" fill="none" stroke="rgb(0,0,0)" />
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="216" x="140" y="2764">This could involve a reboot, meaning</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="174" x="119" y="2777">the solution needs to get the</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="162" x="113" y="2790">OLT back to this state with</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="108" x="86" y="2803">the correct config</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="42" x="613" y="213">link up</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="42" x="913" y="290">link up</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="162" x="1091" y="372">match PORT 67/68 (DHCP) ==&gt;</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="120" x="1112" y="385">FORWARD DHCP server,</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="54" x="1145" y="398">else DROP</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="162" x="791" y="463">match PORT 67/68 (DHCP) ==&gt;</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="120" x="812" y="476">FORWARD DHCP server,</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="54" x="845" y="489">else DROP</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="78" x="331" y="634">DHCP DISCOVER</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="126" x="655" y="714">DHCP DISCOVER (relay)</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="138" x="1403" y="794">DHCP OFFER (quarantine,</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="72" x="1436" y="807">short lease)</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="138" x="503" y="874">DHCP OFFER (quarantine,</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="72" x="536" y="887">short lease)</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="252" x="1618" y="1034">NOTIFY: OLT coming on line with IP x.x.x.x</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="156" x="1694" y="1114">Discover image information</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="102" x="343" y="1194">image information</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="174" x="1685" y="1274">Download new image and reboot</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="66" x="325" y="1354">Fetch image</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="30" x="1757" y="1434">image</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="36" x="306" y="1526">Reboot</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="228" x="1906" y="1700">NOTIFY: OLT available with valid image</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="144" x="2300" y="1782">move OLT to ACCEPT scope</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="60" x="322" y="1942">DHCP RENEW</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="108" x="646" y="2022">DHCP RENEW (relay)</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="48" x="1448" y="2102">DHCP NAK</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="48" x="548" y="2182">DHCP NAK</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="78" x="331" y="2262">DHCP DISCOVER</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="126" x="655" y="2342">DHCP DISCOVER (relay)</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="114" x="1415" y="2422">DHCP OFFER (active,</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="66" x="1439" y="2435">long lease)</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="126" x="1409" y="2448">with config file info</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="114" x="515" y="2513">DHCP OFFER (active,</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="66" x="539" y="2526">long lease)</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="126" x="509" y="2539">with config file info</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="192" x="388" y="2604">download specified configuration</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="66" x="2039" y="2684">config file</text>
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="78" x="327" y="2776">update config</text>
+  <path d="M 192 137 L 1161 137" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 192 141 L 1161 141" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1499 137 L 2468 137" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1499 141 L 2468 141" fill="none" stroke="rgb(0,0,0)" />
+  <rect fill="rgb(208,208,208)" height="19" stroke="rgb(0,0,0)" width="338" x="1161" y="130" />
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="318" x="1330" y="145">On Link Up - Admission Control and allow DHCP Traffic</text>
+  <path d="M 192 558 L 1248 558" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 192 562 L 1248 562" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1412 558 L 2468 558" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1412 562 L 2468 562" fill="none" stroke="rgb(0,0,0)" />
+  <rect fill="rgb(208,208,208)" height="19" stroke="rgb(0,0,0)" width="164" x="1248" y="551" />
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="144" x="1330" y="566">Move OLT into Quarantine</text>
+  <path d="M 192 958 L 1230 958" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 192 962 L 1230 962" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1430 958 L 2468 958" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1430 962 L 2468 962" fill="none" stroke="rgb(0,0,0)" />
+  <rect fill="rgb(208,208,208)" height="19" stroke="rgb(0,0,0)" width="200" x="1230" y="951" />
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="180" x="1330" y="966">Verify and update image on OLT</text>
+  <path d="M 192 1612 L 1176 1612" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 192 1616 L 1176 1616" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1484 1612 L 2468 1612" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1484 1616 L 2468 1616" fill="none" stroke="rgb(0,0,0)" />
+  <rect fill="rgb(208,208,208)" height="19" stroke="rgb(0,0,0)" width="308" x="1176" y="1605" />
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="288" x="1330" y="1620">Manual / Policy to move a connection to "active"</text>
+  <path d="M 192 1866 L 1197 1866" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 192 1870 L 1197 1870" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1463 1866 L 2468 1866" fill="none" stroke="rgb(0,0,0)" />
+  <path d="M 1463 1870 L 2468 1870" fill="none" stroke="rgb(0,0,0)" />
+  <rect fill="rgb(208,208,208)" height="19" stroke="rgb(0,0,0)" width="266" x="1197" y="1859" />
+  <text fill="rgb(0,0,0)" font-family="sansserif" font-size="11" font-style="normal" font-weight="normal" text-anchor="middle" textLength="246" x="1330" y="1874">DHCP renew - Move OLT to "active" network</text>
+</svg>
